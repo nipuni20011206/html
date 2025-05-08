@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaCompass, FaHeart, FaUser, FaGithub } from 'react-icons/fa'; // Example icons
 
-const SITE_NAME = "AtlasView";
+const SITE_NAME = "CountryExplorer";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
