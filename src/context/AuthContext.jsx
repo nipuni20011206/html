@@ -1,80 +1,56 @@
-// context/AuthContext.js
+// src/context/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import { supabase } from '../supabaseClient'; // Import your Supabase client
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(null); // Start with null, let useEffect populate
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
-
-  // Function to decode and set state from token
-  const processToken = (receivedToken) => {
-    try {
-      const decoded = jwtDecode(receivedToken);
-      // Check expiry
-      if (decoded.exp * 1000 > Date.now()) {
-        setToken(receivedToken);
-        // Set user from decoded payload (now includes username)
-        setUser({ id: decoded.id, username: decoded.username }); // Use username
-        localStorage.setItem('authToken', receivedToken); // Store only if valid
-        return true; // Indicate success
-      } else {
-        console.log("Token expired on load.");
-        handleLogout(); // Token expired
-        return false;
-      }
-    } catch (error) {
-      console.error("Invalid token:", error);
-      handleLogout(); // Clear invalid token
-      return false;
-    }
-  };
-
+  const [session, setSession] = useState(null); // Store the full Supabase session
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
-    const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
-      processToken(storedToken); // Use the refactored function
-    }
-    setIsLoading(false); // Finished initial loading attempt
-  }, []); // Run only once on mount
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      setIsLoading(false);
+    }).catch(error => {
+      console.error("AuthContext: Error getting initial session:", error);
+      setIsLoading(false);
+    });
 
+    // Listen for auth state changes (login, logout, token refresh)
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        setIsLoading(false); // Important to set loading to false after state change
+      }
+    );
 
-  // --- MODIFIED handleLogin ---
-  // Accepts the token, optionally accepts user data directly from API response
-  const handleLogin = (newToken, apiUser = null) => {
-     const success = processToken(newToken); // Decode, validate expiry, set state, store token
-     if (success && apiUser) {
-        // If API provided user data directly, prefer that for immediate use
-        // (ensures consistency if JWT payload is minimal)
-        setUser({ id: apiUser.id, username: apiUser.username });
-     } else if (!success) {
-        // If processToken failed (e.g., decode error, expired), ensure logout state
-        handleLogout();
-     }
-  };
+    return () => {
+      // Cleanup listener
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
+  }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    setToken(null);
-    setUser(null);
-  };
+  // login, signup, logout functions will be called directly from components
+  // So, we don't need login/logout functions here in the context for this simpler pattern.
 
   const value = {
-    token,
-    user,
-    isAuthenticated: !!token,
-    isLoading, // Provide loading state if needed elsewhere
-    login: handleLogin,
-    logout: handleLogout,
+    user, // Supabase user object (or null)
+    session, // Supabase session object (or null)
+    isAuthenticated: !!user, // True if user object exists
+    isLoading,
   };
 
-  // Render children only after initial auth check is done (optional but good practice)
+  // Optionally, only render children when not loading to prevent flashes
   // if (isLoading) {
-  //   return <div>Loading application...</div>; // Or a spinner component
+  //   return <div>Loading Auth...</div>;
   // }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
