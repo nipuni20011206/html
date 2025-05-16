@@ -62,6 +62,19 @@ const Countries = () => {
         if (savedRegion) setSelectedRegion(savedRegion);
         if (savedLanguage) setSelectedLanguage(savedLanguage);
 
+        useEffect(() => {
+            localStorage.setItem("persistedSearchQuery", searchQuery);
+            }, [searchQuery]);
+
+        useEffect(() => {
+            localStorage.setItem("persistedRegion", selectedRegion);
+            }, [selectedRegion]);
+
+        useEffect(() => {
+            localStorage.setItem("persistedLanguage", selectedLanguage);
+            }, [selectedLanguage]);
+
+
         const fetchCountries = async () => {
         setLoading(true);
         setError(null);
@@ -79,14 +92,6 @@ const Countries = () => {
 
             const res = await axios.get(url);
             let data = res.data;
-
-
-            // Local language filter only if a language is selected
-            if (selectedLanguage !== "All") {
-                data = data.filter(c =>
-                    c.languages && Object.values(c.languages).includes(selectedLanguage)
-                );
-            }
 
             setAllCountries(data);
             setFilteredCountries(data);
@@ -198,11 +203,7 @@ const Countries = () => {
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-lg shadow">
                   {/* Search Bar */}
                   <div className="relative md:col-span-1"><label htmlFor="search-country" className="sr-only">Search for a country</label><input id="search-country" type="text" placeholder="Search by name..." className="p-3 pl-10 pr-4 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200" value={searchQuery}
-                    onChange={(e) => {
-                    const value = e.target.value;
-                    setSearchQuery(value);
-                    localStorage.setItem("persistedSearchQuery", value); 
-                    }}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     disabled={loading}
                     />
                   <FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" /></div>
