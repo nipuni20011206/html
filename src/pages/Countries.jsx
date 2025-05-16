@@ -184,15 +184,23 @@ const Countries = () => {
                     onChange={(e) => {
                     const value = e.target.value;
                     setSearchQuery(value);
-                    localStorage.setItem("persistedSearchQuery", value); // ✅ Save search in localStorage
+                    localStorage.setItem("persistedSearchQuery", value); 
                     }}
                     disabled={loading}
                     />
                   <FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" /></div>
                   {/* Region Filter */}
-                  <div className="relative md:col-span-1"><label htmlFor="region-filter" className="sr-only">Filter by region</label><select id="region-filter" className="p-3 w-full border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 pr-8 bg-white cursor-pointer" value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)} disabled={loading}><option value="All">All Regions</option><option value="Africa">Africa</option><option value="Americas">Americas</option><option value="Asia">Asia</option><option value="Europe">Europe</option><option value="Oceania">Oceania</option></select><div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg></div></div>
+                  <div className="relative md:col-span-1"><label htmlFor="region-filter" className="sr-only">Filter by region</label><select id="region-filter" className="p-3 w-full border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 pr-8 bg-white cursor-pointer" value={selectedRegion} onChange={(e) => {
+                    setSelectedRegion(e.target.value);
+                    localStorage.setItem("persistedRegion", e.target.value);
+                    }}
+                    disabled={loading}><option value="All">All Regions</option><option value="Africa">Africa</option><option value="Americas">Americas</option><option value="Asia">Asia</option><option value="Europe">Europe</option><option value="Oceania">Oceania</option></select><div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg></div></div>
                   {/* Language Filter */}
-                  <div className="relative md:col-span-1"><label htmlFor="language-filter" className="sr-only">Filter by language</label><select id="language-filter" className="p-3 w-full border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 pr-8 bg-white cursor-pointer" value={selectedLanguage} onChange={(e) => setSelectedLanguage(e.target.value)} disabled={loading || uniqueLanguages.length === 0}><option value="All">All Languages</option>{uniqueLanguages.map((language) => (<option key={language} value={language}>{language}</option>))}</select><div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg></div></div>
+                  <div className="relative md:col-span-1"><label htmlFoonChange={(e) => {
+                    setSelectedLanguage(e.target.value);
+                    localStorage.setItem("persistedLanguage", e.target.value);
+                    }}
+                    r="language-filter" className="sr-only">Filter by language</label><select id="language-filter" className="p-3 w-full border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 pr-8 bg-white cursor-pointer" value={selectedLanguage}  disabled={loading || uniqueLanguages.length === 0}><option value="All">All Languages</option>{uniqueLanguages.map((language) => (<option key={language} value={language}>{language}</option>))}</select><div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg></div></div>
                 </div>
             </div>
 
