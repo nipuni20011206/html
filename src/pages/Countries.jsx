@@ -68,15 +68,18 @@ const Countries = () => {
         try {
             let url = "";
             if (searchQuery) {
-                url = `https://restcountries.com/v3.1/name/${searchQuery}?fields=name,cca3,flags,capital,region,population,languages`;
+            url = `https://restcountries.com/v3.1/name/${searchQuery}?fields=name,cca3,flags,capital,region,population,languages`;
             } else if (selectedRegion !== "All") {
                 url = `https://restcountries.com/v3.1/region/${selectedRegion}?fields=name,cca3,flags,capital,region,population,languages`;
+            } else if (selectedLanguage !== "All") {
+                url = `https://restcountries.com/v3.1/lang/${selectedLanguage}?fields=name,cca3,flags,capital,region,population,languages`;
             } else {
                 url = `https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,population,languages`;
             }
 
             const res = await axios.get(url);
-            let data = res.data;
+            const data = res.data;
+
 
             // Local language filter only if a language is selected
             if (selectedLanguage !== "All") {
@@ -98,16 +101,6 @@ const Countries = () => {
 
     fetchCountries();
 }, [searchQuery, selectedRegion, selectedLanguage]);
-
-
-    // --- Filtering Logic ---
-    useEffect(() => {
-        let result = [...allCountries];
-        if (selectedRegion !== "All") { result = result.filter(c => c.region === selectedRegion); }
-        if (selectedLanguage !== "All") { result = result.filter(c => c.languages && Object.values(c.languages).includes(selectedLanguage)); }
-        if (searchQuery) { const lower = searchQuery.toLowerCase(); result = result.filter(c => c.name.common.toLowerCase().includes(lower)); }
-        setFilteredCountries(result); setCurrentPage(1);
-    }, [searchQuery, selectedRegion, selectedLanguage, allCountries]);
 
     // --- Function to Load Favorites from localStorage ---
     // Encapsulated logic for reuse
