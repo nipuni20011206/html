@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from '../supabaseClient'; // Import Supabase client
-import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa'; // Import FaGoogle
+import { FaEye, FaEyeSlash, FaGoogle} from 'react-icons/fa'; // Import FaGoogle
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");

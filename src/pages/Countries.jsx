@@ -96,7 +96,6 @@ const Countries = () => {
         loadLocalFavorites(); // Load on initial mount
     }, []); // Empty dependency array
 
-    // --- *** NEW useEffect to Sync Favorites State with Auth Status *** ---
     useEffect(() => {
         if (authLoading) {
             // Still waiting for auth status to be confirmed
@@ -104,19 +103,16 @@ const Countries = () => {
         }
 
         if (isAuthenticated) {
-            // User is logged in (or just logged in), reload from localStorage
-            // This assumes localStorage is the single source of truth even for logged-in users in this version
             console.log("Countries.js: Auth state is Authenticated. Reloading local favorites.");
             loadLocalFavorites();
         } else {
             // User is logged out (or just logged out), clear the state
             console.log("Countries.js: Auth state is NOT Authenticated. Clearing favorites state.");
             setFavorites([]); // Clear the UI state
-            // Note: We are NOT clearing localStorage itself here, only the component's state.
-            // The favorites remain in localStorage for when the user logs back in.
+            
         }
-    }, [isAuthenticated, authLoading]); // Run whenever auth status changes
-    // --- *** END OF NEW useEffect *** ---
+    }, [isAuthenticated, authLoading]); 
+   
 
 
     // --- Handler for the favorite button click (localStorage Interaction WITH Auth Check) ---

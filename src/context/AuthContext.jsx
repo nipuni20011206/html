@@ -48,10 +48,7 @@ export const AuthProvider = ({ children }) => {
     isLoading,
   };
 
-  // Optionally, only render children when not loading to prevent flashes
-  // if (isLoading) {
-  //   return <div>Loading Auth...</div>;
-  // }
+
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
@@ -63,3 +60,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export {AuthContext};
