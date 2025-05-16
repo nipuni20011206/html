@@ -35,6 +35,16 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
 // --- Main Countries Component ---
 const Countries = () => {
+    
+    const [allCountries, setAllCountries] = useState([]);
+    const [filteredCountries, setFilteredCountries] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedRegion, setSelectedRegion] = useState("All");
+    const [selectedLanguage, setSelectedLanguage] = useState("All");
+    const [favorites, setFavorites] = useState([]); // Holds localStorage favorites, synced with auth state
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         localStorage.setItem("persistedSearchQuery", searchQuery);
@@ -47,16 +57,6 @@ const Countries = () => {
     useEffect(() => {
         localStorage.setItem("persistedLanguage", selectedLanguage);
         }, [selectedLanguage]);
-    
-    const [allCountries, setAllCountries] = useState([]);
-    const [filteredCountries, setFilteredCountries] = useState([]);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedRegion, setSelectedRegion] = useState("All");
-    const [selectedLanguage, setSelectedLanguage] = useState("All");
-    const [favorites, setFavorites] = useState([]); // Holds localStorage favorites, synced with auth state
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
 
     // Auth and navigation hooks...
     const { isAuthenticated, isLoading: authLoading } = useAuth(); // Still need isAuthenticated
