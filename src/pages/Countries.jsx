@@ -35,7 +35,19 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
 // --- Main Countries Component ---
 const Countries = () => {
-    // --- State ---
+
+    useEffect(() => {
+        localStorage.setItem("persistedSearchQuery", searchQuery);
+        }, [searchQuery]);
+
+    useEffect(() => {
+        localStorage.setItem("persistedRegion", selectedRegion);
+        }, [selectedRegion]);
+
+    useEffect(() => {
+        localStorage.setItem("persistedLanguage", selectedLanguage);
+        }, [selectedLanguage]);
+    
     const [allCountries, setAllCountries] = useState([]);
     const [filteredCountries, setFilteredCountries] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -61,18 +73,6 @@ const Countries = () => {
         if (savedQuery) setSearchQuery(savedQuery);
         if (savedRegion) setSelectedRegion(savedRegion);
         if (savedLanguage) setSelectedLanguage(savedLanguage);
-
-        useEffect(() => {
-            localStorage.setItem("persistedSearchQuery", searchQuery);
-            }, [searchQuery]);
-
-        useEffect(() => {
-            localStorage.setItem("persistedRegion", selectedRegion);
-            }, [selectedRegion]);
-
-        useEffect(() => {
-            localStorage.setItem("persistedLanguage", selectedLanguage);
-            }, [selectedLanguage]);
 
 
         const fetchCountries = async () => {
