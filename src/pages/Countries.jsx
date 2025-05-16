@@ -62,24 +62,42 @@ const Countries = () => {
         if (savedRegion) setSelectedRegion(savedRegion);
         if (savedLanguage) setSelectedLanguage(savedLanguage);
 
-        const fetchInitialData = async () => {
-            setLoading(true);
-            setError(null);
+        const fetchCountries = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            let url = "";
+            if (searchQuery) {
+                url = `https://restcountries.com/v3.1/name/${searchQuery}?fields=name,cca3,flags,capital,region,population,languages`;
+            } else if (selectedRegion !== "All") {
+                url = `https://restcountries.com/v3.1/region/${selectedRegion}?fields=name,cca3,flags,capital,region,population,languages`;
+            } else {
+                url = `https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,population,languages`;
+            }
+
+            const res = await axios.get(url);
+            let data = res.data;
+
+            // Local language filter only if a language is selected
+            if (selectedLanguage !== "All") {
+                data = data.filter(c =>
+                    c.languages && Object.values(c.languages).includes(selectedLanguage)
+                );
+            }
+
+            setAllCountries(data);
+            setFilteredCountries(data);
             setCurrentPage(1);
-            try {
-            const res = await axios.get("https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,population,languages");
-            setAllCountries(res.data);
-            setFilteredCountries(res.data);
-            } catch (err) {
+        } catch (err) {
             console.error("Error fetching countries:", err);
             setError("Failed to load country data.");
-            } finally {
+        } finally {
             setLoading(false);
-            }
-        };
+        }
+    };
 
-        fetchInitialData();
-        }, []);
+    fetchCountries();
+}, [searchQuery, selectedRegion, selectedLanguage]);
 
 
     // --- Filtering Logic ---
