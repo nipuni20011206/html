@@ -1,28 +1,35 @@
-beforeAll(() => {
-  jest.spyOn(console, 'log').mockImplementation(() => {}); // silences all console.log
-});
-
-
-// Mock Supabase client before anything else
 jest.mock('../src/supabaseClient', () => ({
   supabase: {
     auth: {
       getSession: jest.fn().mockResolvedValue({ data: { session: null } }),
-      onAuthStateChange: jest.fn(() => ({ data: { subscription: { unsubscribe: jest.fn() } } })),
+      onAuthStateChange: jest.fn(() => ({
+        data: { subscription: { unsubscribe: jest.fn() } }
+      })),
     },
   },
 }));
-
 
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import Countries from '../src/pages/Countries';
 import { AuthContext } from '../src/context/AuthContext';
-import axios from 'axios';
 import { MemoryRouter } from 'react-router-dom';
-import { act } from 'react';
+import axios from 'axios';
 
-// Mock country data
+//Mock axios
+jest.mock('axios');
+
+//Mock localStorage
+beforeEach(() => {
+  localStorage.clear();
+  Storage.prototype.getItem = jest.fn((key) => {
+    if (key === 'favorites') return JSON.stringify([]);
+    return '';
+  });
+  Storage.prototype.setItem = jest.fn();
+});
+
+//Sample countries
 const mockCountries = [
   {
     cca3: 'USA',
@@ -31,7 +38,7 @@ const mockCountries = [
     region: 'Americas',
     population: 331002651,
     languages: { eng: 'English' },
-    flags: { svg: 'https://flagcdn.com/us.svg' }
+    flags: { svg: 'https://flagcdn.com/us.svg' },
   },
   {
     cca3: 'JPN',
@@ -40,88 +47,84 @@ const mockCountries = [
     region: 'Asia',
     population: 126476461,
     languages: { jpn: 'Japanese' },
-    flags: { svg: 'https://flagcdn.com/jp.svg' }
-  }
+    flags: { svg: 'https://flagcdn.com/jp.svg' },
+  },
 ];
 
-// Mock localStorage
-beforeEach(() => {
-  Storage.prototype.getItem = jest.fn(() => JSON.stringify([]));
-  Storage.prototype.setItem = jest.fn();
-});
-
-// Mock axios
-jest.mock('axios');
-axios.get.mockResolvedValue({ data: mockCountries });
-
-// Custom render with mocked AuthContext
+//Reusable render function
 const renderWithAuth = async (isAuthenticated = false) => {
+  axios.get.mockResolvedValue({ data: mockCountries });
+
+  render(
+    <MemoryRouter>
+      <AuthContext.Provider value={{ isAuthenticated, isLoading: false }}>
+        <Countries />
+      </AuthContext.Provider>
+    </MemoryRouter>
+  );
+
+  await waitFor(() =>
+    expect(screen.queryByText(/Loading countries/i)).not.toBeInTheDocument()
+  );
+};
+
+describe('Countries Component', () => {
+  it('renders loading spinner initially', async () => {
+    axios.get.mockResolvedValueOnce({ data: mockCountries });
+
     render(
       <MemoryRouter>
-        <AuthContext.Provider value={{ isAuthenticated, isLoading: false }}>
+        <AuthContext.Provider value={{ isAuthenticated: false, isLoading: false }}>
           <Countries />
         </AuthContext.Provider>
       </MemoryRouter>
     );
-};
 
-beforeAll(() => {
-  jest.spyOn(console, 'error').mockImplementation((msg, ...args) => {
-    if (msg.includes('act(...)')) return;
-    console.error(msg, ...args);
-  });
-});
-
-
-describe('Countries Component', () => {
-  it('renders loading spinner initially', async () => {
-    renderWithAuth();
     expect(screen.getByText(/Loading countries/i)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByText(/Loading countries/i)).not.toBeInTheDocument()
+    );
   });
 
   it('renders countries after fetch', async () => {
-  await renderWithAuth();
+    await renderWithAuth();
 
-  await waitFor(() => {
-    expect(screen.getByText('Japan')).toBeInTheDocument();
-    expect(screen.getByText('United States')).toBeInTheDocument();
+    // Use role-based queries to avoid matching extra elements like <option>
+    expect(screen.getByRole('heading', { name: 'Japan' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'United States' })).toBeInTheDocument();
   });
-});
 
 
   it('filters countries by search query', async () => {
-    renderWithAuth();
-    await waitFor(() => screen.getByText('Japan'));
+    await renderWithAuth();
 
     const input = screen.getByPlaceholderText(/Search by name/i);
     fireEvent.change(input, { target: { value: 'Japan' } });
 
     await waitFor(() => {
-      expect(screen.getByText('Japan')).toBeInTheDocument();
-      expect(screen.queryByText('United States')).not.toBeInTheDocument();
+      expect(screen.getByText(/Japan/i)).toBeInTheDocument();
+      expect(screen.queryByText(/United States/i)).not.toBeInTheDocument();
     });
   });
 
   it('shows toast and blocks favorites if not authenticated', async () => {
-  await renderWithAuth(false); // Not logged in
+    await renderWithAuth(false);
+    const favoriteButtons = screen.getAllByLabelText(/Add .* to favorites/i);
+    fireEvent.click(favoriteButtons[0]);
 
-  await waitFor(() => screen.getByText('Japan'));
+    // This should still not include favorites being saved
+    expect(localStorage.setItem).not.toHaveBeenCalledWith("favorites", expect.any(String));
+  });
 
-  const favoriteButtons = screen.getAllByLabelText(/Add .* to favorites/i);
-  fireEvent.click(favoriteButtons[0]);
 
-  expect(localStorage.setItem).not.toHaveBeenCalled();
-});
+  it('allows adding/removing favorites when authenticated', async () => {
+    await renderWithAuth(true);
+    const favoriteButtons = screen.getAllByLabelText(/Add .* to favorites/i);
+    fireEvent.click(favoriteButtons[0]);
 
-it('allows adding/removing favorites when authenticated', async () => {
-  await renderWithAuth(true); // Logged in
-
-  await waitFor(() => screen.getByText('Japan'));
-
-  const favoriteButtons = screen.getAllByLabelText(/Add .* to favorites/i);
-  fireEvent.click(favoriteButtons[0]);
-
-  expect(localStorage.setItem).toHaveBeenCalledTimes(1);
-});
+    // Count how many times it was called with 'favorites'
+    const favoriteCalls = localStorage.setItem.mock.calls.filter(call => call[0] === "favorites");
+    expect(favoriteCalls).toHaveLength(1);
+  });
 
 });

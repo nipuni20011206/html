@@ -19,7 +19,7 @@ const Footer = () => {
 
         {/* Icon Links */}
         <nav className="flex space-x-6 order-1 sm:order-2" aria-label="Footer Quick Links">
-          <Link to="/explore" className="text-gray-500 hover:text-blue-600 transition-colors" title="Explore">
+          <Link to="/countries" className="text-gray-500 hover:text-blue-600 transition-colors" title="Explore">
             <FaCompass className="h-5 w-5" />
             <span className="sr-only">Countries</span>
           </Link>
