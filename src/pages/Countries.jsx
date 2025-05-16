@@ -78,7 +78,7 @@ const Countries = () => {
             }
 
             const res = await axios.get(url);
-            const data = res.data;
+            let data = res.data;
 
 
             // Local language filter only if a language is selected
