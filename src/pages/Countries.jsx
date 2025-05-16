@@ -34,9 +34,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 const Countries = () => {
     const [allCountries, setAllCountries] = useState([]);
     const [filteredCountries, setFilteredCountries] = useState([]);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedRegion, setSelectedRegion] = useState("All");
-    const [selectedLanguage, setSelectedLanguage] = useState("All");
+    const [searchQuery, setSearchQuery] = useState(() => localStorage.getItem("persistedSearchQuery") || "");
+    const [selectedRegion, setSelectedRegion] = useState(() => localStorage.getItem("persistedRegion") || "All");
+    const [selectedLanguage, setSelectedLanguage] = useState(() => localStorage.getItem("persistedLanguage") || "All");
     const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -58,15 +58,6 @@ const Countries = () => {
         localStorage.setItem("persistedLanguage", selectedLanguage);
     }, [selectedLanguage]);
 
-    useEffect(() => {
-        const savedQuery = localStorage.getItem("persistedSearchQuery");
-        const savedRegion = localStorage.getItem("persistedRegion");
-        const savedLanguage = localStorage.getItem("persistedLanguage");
-
-        if (savedQuery) setSearchQuery(savedQuery);
-        if (savedRegion) setSelectedRegion(savedRegion);
-        if (savedLanguage) setSelectedLanguage(savedLanguage);
-    }, []);
 
     useEffect(() => {
         const fetchCountries = async () => {
