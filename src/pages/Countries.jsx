@@ -5,10 +5,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { toast } from "react-hot-toast";
 
-// --- Pagination Configuration ---
 const ITEMS_PER_PAGE = 12;
 
-// Helper Component (No changes needed)
 const CountryDetail = ({ label, value }) => (
     <p className="text-sm">
         <span className="font-medium text-gray-700">{label}:</span>{' '}
@@ -16,56 +14,51 @@ const CountryDetail = ({ label, value }) => (
     </p>
 );
 
-// Pagination Component (No changes needed)
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
-    const pageNumbers = []; for (let i = 1; i <= totalPages; i++) { pageNumbers.push(i); }
     const handlePrevious = () => { if (currentPage > 1) { onPageChange(currentPage - 1); } };
     const handleNext = () => { if (currentPage < totalPages) { onPageChange(currentPage + 1); } };
     return (
         <nav className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-12" aria-label="Pagination">
-            <div className="hidden sm:block"><p className="text-sm text-gray-700">Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span></p></div>
+            <div className="hidden sm:block">
+                <p className="text-sm text-gray-700">Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span></p>
+            </div>
             <div className="flex flex-1 justify-between sm:justify-end">
-                <button onClick={handlePrevious} disabled={currentPage === 1} className={`relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed`}><FaChevronLeft className="h-4 w-4 mr-2" aria-hidden="true" />Previous</button>
-                <button onClick={handleNext} disabled={currentPage === totalPages} className={`relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed`}>Next<FaChevronRight className="h-4 w-4 ml-2" aria-hidden="true" /></button>
+                <button onClick={handlePrevious} disabled={currentPage === 1} className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"><FaChevronLeft className="h-4 w-4 mr-2" aria-hidden="true" />Previous</button>
+                <button onClick={handleNext} disabled={currentPage === totalPages} className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Next<FaChevronRight className="h-4 w-4 ml-2" aria-hidden="true" /></button>
             </div>
         </nav>
     );
 };
 
-// --- Main Countries Component ---
 const Countries = () => {
-    
     const [allCountries, setAllCountries] = useState([]);
     const [filteredCountries, setFilteredCountries] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedRegion, setSelectedRegion] = useState("All");
     const [selectedLanguage, setSelectedLanguage] = useState("All");
-    const [favorites, setFavorites] = useState([]); // Holds localStorage favorites, synced with auth state
+    const [favorites, setFavorites] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
 
-    useEffect(() => {
-        localStorage.setItem("persistedSearchQuery", searchQuery);
-        }, [searchQuery]);
-
-    useEffect(() => {
-        localStorage.setItem("persistedRegion", selectedRegion);
-        }, [selectedRegion]);
-
-    useEffect(() => {
-        localStorage.setItem("persistedLanguage", selectedLanguage);
-        }, [selectedLanguage]);
-
-    // Auth and navigation hooks...
-    const { isAuthenticated, isLoading: authLoading } = useAuth(); // Still need isAuthenticated
+    const { isAuthenticated, isLoading: authLoading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
-    // --- Fetching All Countries Data ---
     useEffect(() => {
-        
+        localStorage.setItem("persistedSearchQuery", searchQuery);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        localStorage.setItem("persistedRegion", selectedRegion);
+    }, [selectedRegion]);
+
+    useEffect(() => {
+        localStorage.setItem("persistedLanguage", selectedLanguage);
+    }, [selectedLanguage]);
+
+    useEffect(() => {
         const savedQuery = localStorage.getItem("persistedSearchQuery");
         const savedRegion = localStorage.getItem("persistedRegion");
         const savedLanguage = localStorage.getItem("persistedLanguage");
@@ -73,44 +66,51 @@ const Countries = () => {
         if (savedQuery) setSearchQuery(savedQuery);
         if (savedRegion) setSelectedRegion(savedRegion);
         if (savedLanguage) setSelectedLanguage(savedLanguage);
+    }, []);
 
-
+    useEffect(() => {
         const fetchCountries = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            let url = "";
-            if (searchQuery) {
-            url = `https://restcountries.com/v3.1/name/${searchQuery}?fields=name,cca3,flags,capital,region,population,languages`;
-            } else if (selectedRegion !== "All") {
-                url = `https://restcountries.com/v3.1/region/${selectedRegion}?fields=name,cca3,flags,capital,region,population,languages`;
-            } else if (selectedLanguage !== "All") {
-                url = `https://restcountries.com/v3.1/lang/${selectedLanguage}?fields=name,cca3,flags,capital,region,population,languages`;
-            } else {
-                url = `https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,population,languages`;
+            setLoading(true);
+            setError(null);
+            try {
+                let url = "";
+                if (searchQuery) {
+                    url = `https://restcountries.com/v3.1/name/${searchQuery}?fields=name,cca3,flags,capital,region,population,languages`;
+                } else if (selectedRegion !== "All") {
+                    url = `https://restcountries.com/v3.1/region/${selectedRegion}?fields=name,cca3,flags,capital,region,population,languages`;
+                } else if (selectedLanguage !== "All") {
+                    url = `https://restcountries.com/v3.1/lang/${selectedLanguage}?fields=name,cca3,flags,capital,region,population,languages`;
+                } else {
+                    url = `https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,population,languages`;
+                }
+
+                const res = await axios.get(url);
+                let data = res.data;
+
+                if (selectedLanguage !== "All" && searchQuery) {
+                    data = data.filter(c => c.languages && Object.values(c.languages).some(lang => lang.toLowerCase().includes(selectedLanguage.toLowerCase())));
+                }
+
+                if (searchQuery) {
+                    const lower = searchQuery.toLowerCase();
+                    data = data.filter(c => c.name.common.toLowerCase().includes(lower));
+                }
+
+                setAllCountries(data);
+                setFilteredCountries(data);
+                setCurrentPage(1);
+            } catch (err) {
+                console.error("Error fetching countries:", err);
+                setError("Failed to load country data.");
+            } finally {
+                setLoading(false);
             }
+        };
 
-            const res = await axios.get(url);
-            let data = res.data;
+        fetchCountries();
+    }, [searchQuery, selectedRegion, selectedLanguage]);
 
-            setAllCountries(data);
-            setFilteredCountries(data);
-            setCurrentPage(1);
-        } catch (err) {
-            console.error("Error fetching countries:", err);
-            setError("Failed to load country data.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    fetchCountries();
-}, [searchQuery, selectedRegion, selectedLanguage]);
-
-    // --- Function to Load Favorites from localStorage ---
-    // Encapsulated logic for reuse
     const loadLocalFavorites = () => {
-        console.log("Countries.js: Loading favorites from localStorage.");
         try {
             const savedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
             setFavorites(savedFavorites);
@@ -121,79 +121,65 @@ const Countries = () => {
         }
     };
 
-    // --- useEffect to Load Favorites from localStorage initially ---
     useEffect(() => {
-        loadLocalFavorites(); // Load on initial mount
-    }, []); // Empty dependency array
+        loadLocalFavorites();
+    }, []);
 
     useEffect(() => {
-        if (authLoading) {
-            // Still waiting for auth status to be confirmed
-            return;
-        }
-
+        if (authLoading) return;
         if (isAuthenticated) {
-            console.log("Countries.js: Auth state is Authenticated. Reloading local favorites.");
             loadLocalFavorites();
         } else {
-            // User is logged out (or just logged out), clear the state
-            console.log("Countries.js: Auth state is NOT Authenticated. Clearing favorites state.");
-            setFavorites([]); // Clear the UI state
-            
+            setFavorites([]);
         }
-    }, [isAuthenticated, authLoading]); 
-   
+    }, [isAuthenticated, authLoading]);
 
-
-    // --- Handler for the favorite button click (localStorage Interaction WITH Auth Check) ---
     const handleFavoriteClick = (country) => {
         if (!isAuthenticated) {
-            toast.error("Please log in to manage your favorites.", { /* ... toast options ... */ });
-            // navigate('/sign-in', { state: { from: location.pathname }}); // Optional redirect
+            toast.error("Please log in to manage your favorites.");
             return;
         }
 
         const isCurrentlyFavorite = favorites.some((fav) => fav.cca3 === country.cca3);
-        let updatedFavorites;
-        let wasAdded;
+        let updatedFavorites = isCurrentlyFavorite
+            ? favorites.filter((fav) => fav.cca3 !== country.cca3)
+            : [...favorites, country];
 
-        if (isCurrentlyFavorite) {
-            updatedFavorites = favorites.filter((fav) => fav.cca3 !== country.cca3);
-            wasAdded = false;
-        } else {
-            updatedFavorites = [...favorites, country];
-            wasAdded = true;
-        }
-
-        setFavorites(updatedFavorites); // Update local state
+        setFavorites(updatedFavorites);
 
         try {
             localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-            toast.success(wasAdded ? `${country.name.common} added to local favorites!` : `${country.name.common} removed from local favorites!`, { /* ... toast options ... */});
+            toast.success(isCurrentlyFavorite ? `${country.name.common} removed from local favorites!` : `${country.name.common} added to local favorites!`);
         } catch (error) {
             console.error("Error updating localStorage:", error);
             toast.error("Failed to update local favorites storage.");
-            setFavorites(favorites); // Revert state on storage error
+            setFavorites(favorites);
         }
     };
 
-    // --- Calculations (remain the same) ---
     const uniqueLanguages = useMemo(() => {
-        if (!allCountries) return []; const ls = new Set();
-        allCountries.forEach(c => { if (c.languages) { Object.values(c.languages).forEach(l => ls.add(l)); }});
+        if (!allCountries) return [];
+        const ls = new Set();
+        allCountries.forEach(c => {
+            if (c.languages) Object.values(c.languages).forEach(l => ls.add(l));
+        });
         return Array.from(ls).sort();
     }, [allCountries]);
+
     const totalItems = filteredCountries.length;
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
     const currentCountries = useMemo(() => {
-        const start = (currentPage - 1) * ITEMS_PER_PAGE; const end = start + ITEMS_PER_PAGE;
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
         return filteredCountries.slice(start, end);
     }, [filteredCountries, currentPage]);
 
-    // --- Handler for changing page (remains the same) ---
-    const handlePageChange = (page) => { if (page >= 1 && page <= totalPages) { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }};
-
-    // --- JSX Rendering (No changes needed in the structure) ---
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
     return (
         <div className="bg-gradient-to-b from-white to-gray-100 min-h-[calc(100vh-4rem)] w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
             {/* Filters Section */}
