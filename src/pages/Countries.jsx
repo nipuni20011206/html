@@ -54,7 +54,7 @@ const Countries = () => {
     // --- Fetching All Countries Data ---
     useEffect(() => {
         const savedQuery = localStorage.getItem("persistedSearchQuery");
-        if (savedQuery) setSearchQuery(savedQuery); // ✅ Restore query
+        if (savedQuery) setSearchQuery(savedQuery); 
 
         const fetchInitialData = async () => {
             setLoading(true);
