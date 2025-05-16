@@ -32,7 +32,7 @@ const Footer = () => {
             <span className="sr-only">Profile</span>
           </Link>
            {/* Optional External Link */}
-           <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-800 transition-colors" title="GitHub">
+           <a href="https://github.com/nipuni20011206" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-800 transition-colors" title="GitHub">
               <FaGithub className="h-5 w-5" />
               <span className="sr-only">GitHub</span>
            </a>
