@@ -1,12 +1,9 @@
-// src/pages/Countries.js
-
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { FaSearch, FaHeart, FaRegHeart, FaInfoCircle, FaSpinner, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { toast } from "react-hot-toast";
-// Supabase import removed
 
 // --- Pagination Configuration ---
 const ITEMS_PER_PAGE = 12;
@@ -56,17 +53,28 @@ const Countries = () => {
 
     // --- Fetching All Countries Data ---
     useEffect(() => {
+        const savedQuery = localStorage.getItem("persistedSearchQuery");
+        if (savedQuery) setSearchQuery(savedQuery); // ✅ Restore query
+
         const fetchInitialData = async () => {
-            setLoading(true); setError(null); setCurrentPage(1);
+            setLoading(true);
+            setError(null);
+            setCurrentPage(1);
             try {
-                const res = await axios.get("https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,population,languages");
-                setAllCountries(res.data); setFilteredCountries(res.data);
+            const res = await axios.get("https://restcountries.com/v3.1/all?fields=name,cca3,flags,capital,region,population,languages");
+            setAllCountries(res.data);
+            setFilteredCountries(res.data);
             } catch (err) {
-                console.error("Error fetching countries:", err); setError("Failed to load country data.");
-            } finally { setLoading(false); }
+            console.error("Error fetching countries:", err);
+            setError("Failed to load country data.");
+            } finally {
+            setLoading(false);
+            }
         };
+
         fetchInitialData();
-    }, []);
+        }, []);
+
 
     // --- Filtering Logic ---
     useEffect(() => {
@@ -172,7 +180,15 @@ const Countries = () => {
                 {/* ... Filter JSX ... */}
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-lg shadow">
                   {/* Search Bar */}
-                  <div className="relative md:col-span-1"><label htmlFor="search-country" className="sr-only">Search for a country</label><input id="search-country" type="text" placeholder="Search by name..." className="p-3 pl-10 pr-4 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} disabled={loading} /><FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" /></div>
+                  <div className="relative md:col-span-1"><label htmlFor="search-country" className="sr-only">Search for a country</label><input id="search-country" type="text" placeholder="Search by name..." className="p-3 pl-10 pr-4 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200" value={searchQuery}
+                    onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchQuery(value);
+                    localStorage.setItem("persistedSearchQuery", value); // ✅ Save search in localStorage
+                    }}
+                    disabled={loading}
+                    />
+                  <FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" /></div>
                   {/* Region Filter */}
                   <div className="relative md:col-span-1"><label htmlFor="region-filter" className="sr-only">Filter by region</label><select id="region-filter" className="p-3 w-full border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 pr-8 bg-white cursor-pointer" value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)} disabled={loading}><option value="All">All Regions</option><option value="Africa">Africa</option><option value="Americas">Americas</option><option value="Asia">Asia</option><option value="Europe">Europe</option><option value="Oceania">Oceania</option></select><div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"><svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg></div></div>
                   {/* Language Filter */}
